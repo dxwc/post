@@ -1,0 +1,34 @@
+# id is !PERMANENT!, choose wisely, and choose once
+id: e82ebc81-72f6-4c12-a389-ee1b84f3bdc5
+# title must exist
+title : Hello World
+subtitle:
+authors:
+  - name: Robert
+    email:
+    uri: https://example.com/about
+  - name: Jim
+    email: jim@example.com
+    uri:
+link:
+  self : https://example.com
+  alternate:
+icon_link :
+rights:
+logo:
+generator:
+  name:
+  uri:
+  version:
+categories:
+  - term: sports
+    label:
+    schema: https://www.example.com
+  - term: ck
+    label: food and cooking
+contributors:
+  - name:
+    uri: https://www.example.com
+    email:
+  - name: Jonathan
+    uri:

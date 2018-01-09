@@ -11,6 +11,10 @@ let feed_id;
 let md_dir = './markdown';
 let all_entries = '';
 
+// TODO:
+// + add published, rights, source, summery
+// + see if tags can be added easily or should be omitted
+
 open_db_global()
 .then(() =>
 {
@@ -254,6 +258,26 @@ function person_construct_generator(person, tagname)
     return all;
 }
 
+function link_generator(links)
+{
+    let all = '';
+    if(links === undefined) return all;
+    for(let i = 0; i < links.length; ++i)
+    {
+        if(!links[i].href || links[i].href.length === 0) continue;
+        all +=
+`
+  <link
+    ${links[i].rel ? `rel='${links[i].rel}'` : ''}
+    ${links[i].type ? `type='${links[i].type}'` : ''}
+    href='${links[i].href}'
+  />`;
+    }
+
+    return all;
+
+}
+
 function generate_feed(feed, entries, updated)
 {
 
@@ -265,7 +289,7 @@ let xml = `<?xml version='1.0' encoding='utf-8'?>
   <updated>${new Date(updated).toISOString()}</updated>
   ${feed.subtitle ? feed.subtitle : ''}
   ${person_construct_generator(feed.authors, 'author')}
-  ${feed.link.self ? `<link rel='self' href='${feed.link.self}' />` : ''}
+  ${link_generator(feed.links)}
   ${feed.icon ? `<icon>${feed.icon}</icon>` : ''}
   ${feed.logo ? `<logo>${feed.logo}</logo>` : ''}
   ${feed.rights ? `<rights>${feed.logo}</rights>` : ''}
@@ -442,6 +466,10 @@ function check_entry(md_file_loc, data)
     <content type='html'>
     ${validator.escape(result[0])}
     </content>
+    ${person_construct_generator(data.yaml.authors, 'author')}
+    ${link_generator(data.yaml.links)}
+    ${category_generator(data.yaml.categories)}
+    ${person_construct_generator(data.yaml.contributors, 'contributor')}
   </entry>
 `;
     })

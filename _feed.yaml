@@ -10,9 +10,13 @@ authors:
   - name: Jim
     email: jim@example.com
     uri:
-link:
-  self : https://example.com
-  alternate:
+links:
+  - rel: self
+    href: https://example.com/atom.xml
+    type: "application/atom+xml"
+  - rel:
+    href:
+    type:
 icon_link :
 rights:
 logo:

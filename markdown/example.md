@@ -8,6 +8,9 @@ tag:
     - markdown
     - test
     - debug
+links:
+    - rel: via
+      href: https://example.com
 ---
 
 # Example Page

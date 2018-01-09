@@ -70,15 +70,17 @@ open_db_global()
 })
 .then(() =>
 {
-    // TODO: change date from text to unix time to order by and use the largest for
-    // <updated>, direct children of <feed>
+    return db_get_promise
+    (
+        `SELECT updated FROM entry ORDER BY updated DESC LIMIT 1`
+    );
 })
-.then(() =>
+.then((result) =>
 {
     fs.writeFileSync
     (
         './atom.xml',
-        generate_feed(feed, all_entries),
+        generate_feed(feed, all_entries, result.updated),
         { encoding : 'utf-8'}
     );
     console.log('--Generated ./atom.xml file');
@@ -132,7 +134,7 @@ function open_db_global()
                 CREATE TABLE IF NOT EXISTS entry
                 (
                     id       TEXT PRIMARY KEY, -- UUID v4
-                    updated  TEXT NOT NULL, -- update if content is different
+                    updated  INTEGER NOT NULL, -- update if content is different
                     file_loc TEXT NOT NULL UNIQUE, -- location of md file
                     content  TEXT -- html/text content
                 );
@@ -252,7 +254,7 @@ function person_construct_generator(person, tagname)
     return all;
 }
 
-function generate_feed(feed, entries)
+function generate_feed(feed, entries, updated)
 {
 
 let xml = `<?xml version='1.0' encoding='utf-8'?>
@@ -260,7 +262,7 @@ let xml = `<?xml version='1.0' encoding='utf-8'?>
 
   <id>${feed.id}</id>
   <title>${feed.title}</title>
-  <updated>${new Date().toISOString()}</updated>
+  <updated>${new Date(updated).toISOString()}</updated>
   ${feed.subtitle ? feed.subtitle : ''}
   ${person_construct_generator(feed.authors, 'author')}
   ${feed.link.self ? `<link rel='self' href='${feed.link.self}' />` : ''}
@@ -366,7 +368,7 @@ function check_entry(md_file_loc, data)
 
     let content_diff = false; // indicate need to generate
     let entry_id = uuidv4();
-    let updated = new Date().toISOString();
+    let updated = new Date().getTime();
 
     // TODO, date update/insert -- check yaml/file-change for info, else current
     // TODO, replace content with hash to save space
@@ -436,7 +438,7 @@ function check_entry(md_file_loc, data)
   <entry>
     <id>${entry_id}</id>
     <title>${data.yaml.title}</title>
-    <updated>${updated}</updated>
+    <updated>${new Date(updated).toISOString()}</updated>
     <content type='html'>
     ${validator.escape(result[0])}
     </content>

@@ -70,6 +70,11 @@ open_db_global()
 })
 .then(() =>
 {
+    // TODO: change date from text to unix time to order by and use the largest for
+    // <updated>, direct children of <feed>
+})
+.then(() =>
+{
     fs.writeFileSync
     (
         './atom.xml',

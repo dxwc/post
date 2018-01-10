@@ -12,7 +12,7 @@ let md_dir = './markdown';
 let all_entries = '';
 
 // TODO:
-// + add published, rights, source, summery
+// + add rights, source, summery
 // + see if tags can be added easily or should be omitted
 
 open_db_global()
@@ -137,10 +137,11 @@ function open_db_global()
                 `
                 CREATE TABLE IF NOT EXISTS entry
                 (
-                    id       TEXT PRIMARY KEY, -- UUID v4
-                    updated  INTEGER NOT NULL, -- update if content is different
-                    file_loc TEXT NOT NULL UNIQUE, -- location of md file
-                    content  TEXT -- html/text content
+                    id        TEXT PRIMARY KEY, -- UUID v4
+                    published INTEGER NOT NULL, -- set on first insertion
+                    updated   INTEGER NOT NULL, -- update if content is different
+                    file_loc  TEXT NOT NULL UNIQUE, -- location of md file
+                    content   TEXT -- html/text content
                 );
                 `
             )
@@ -393,6 +394,7 @@ function check_entry(md_file_loc, data)
     let content_diff = false; // indicate need to generate
     let entry_id = uuidv4();
     let updated = new Date().getTime();
+    let published = new Date().toISOString();
 
     // TODO, date update/insert -- check yaml/file-change for info, else current
     // TODO, replace content with hash to save space
@@ -409,6 +411,7 @@ function check_entry(md_file_loc, data)
                 INSERT INTO entry
                 (
                     id,
+                    published,
                     updated,
                     file_loc,
                     content
@@ -416,6 +419,7 @@ function check_entry(md_file_loc, data)
                 VALUES
                 (
                     '${entry_id}',
+                    '${updated}',
                     '${updated}',
                     '${md_file_loc}',
                     '${extracted_md}'
@@ -427,6 +431,7 @@ function check_entry(md_file_loc, data)
         {
             entry_id = result.id;
             content_diff = (result.content !== extracted_md);
+            published = result.published;
 
             if(content_diff)
             {
@@ -445,6 +450,7 @@ function check_entry(md_file_loc, data)
             else
             {
                 updated = result.updated;
+                return;
             }
         }
     })
@@ -463,6 +469,7 @@ function check_entry(md_file_loc, data)
     <id>${entry_id}</id>
     <title>${data.yaml.title}</title>
     <updated>${new Date(updated).toISOString()}</updated>
+    <published>${new Date(published).toISOString()}</published>
     <content type='html'>
     ${validator.escape(result[0])}
     </content>

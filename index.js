@@ -104,7 +104,23 @@ open_db_global()
 // ---------------------------------------------------------
 
 
+// for normal usages should be good enough
+function md_path_to_category(md_path)
+{
+    let category_arr = md_path.split('/');
+    category_arr = category_arr.filter((value) =>
+    {
+        return value.length > 1 && value[0] !== '.';
+    });
+    category_arr = category_arr.slice(0, category_arr.length-1);
 
+    let all = '';
+    for(let i = 0; i < category_arr.length; ++i)
+    {
+        all += `<category term='${category_arr[i]}' label='${category_arr[i]}' />`
+    }
+    return all;
+}
 
 
 // >------------- Sqlite3 callbacks promisify ------------->
@@ -233,7 +249,9 @@ function category_generator(categories)
 `
   <category
     term='${categories[i].term}'
-    ${categories[i].label ? `label='${categories[i].label}'` : ''}
+    ${categories[i].label ?
+        `label='${categories[i].label}'` :
+        `label='${categories[i].term}'`}
     ${categories[i].schema ? `schema='${categories[i].schema}'` : ''}
     />`
     }
@@ -267,12 +285,11 @@ function link_generator(links)
     {
         if(!links[i].href || links[i].href.length === 0) continue;
         all +=
-`
-  <link
-    ${links[i].rel ? `rel='${links[i].rel}'` : ''}
-    ${links[i].type ? `type='${links[i].type}'` : ''}
-    href='${links[i].href}'
-  />`;
+`<link
+      ${links[i].rel ? `rel='${links[i].rel}'` : ''}
+      ${links[i].type ? `type='${links[i].type}'` : ''}
+      href='${links[i].href}'
+    />`;
     }
 
     return all;
@@ -395,6 +412,7 @@ function check_entry(md_file_loc, data)
     let entry_id = uuidv4();
     let updated = new Date().getTime();
     let published = new Date().toISOString();
+    let loc;
 
     // TODO, date update/insert -- check yaml/file-change for info, else current
     // TODO, replace content with hash to save space
@@ -432,6 +450,7 @@ function check_entry(md_file_loc, data)
             entry_id = result.id;
             content_diff = (result.content !== extracted_md);
             published = result.published;
+            loc = validator.unescape(result.file_loc);
 
             if(content_diff)
             {
@@ -477,6 +496,7 @@ function check_entry(md_file_loc, data)
     ${link_generator(data.yaml.links)}
     ${category_generator(data.yaml.categories)}
     ${person_construct_generator(data.yaml.contributors, 'contributor')}
+    ${md_path_to_category(loc)}
   </entry>
 `;
     })

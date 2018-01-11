@@ -9,6 +9,7 @@ const validator = require('validator');
 let feed;
 let feed_id;
 let md_dir = '../../markdown';
+let feed_dir = '../../public';
 let all_entries = '';
 
 // TODO:
@@ -70,6 +71,10 @@ open_db_global()
 })
 .then(() =>
 {
+    return run_command(`mkdir -p ${feed_dir}`);
+})
+.then(() =>
+{
     return db_get_promise
     (
         `SELECT updated FROM entry ORDER BY updated DESC LIMIT 1`
@@ -79,11 +84,11 @@ open_db_global()
 {
     fs.writeFileSync
     (
-        './atom.xml',
+        feed_dir + '/feed.xml',
         generate_feed(feed, all_entries, result.updated),
         { encoding : 'utf-8'}
     );
-    console.log('--Generated ./atom.xml file');
+    console.log('--Generated feed xml file');
     db.close();
 })
 .catch((err) =>

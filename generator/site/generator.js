@@ -1,3 +1,7 @@
+// TODO:
+// - combine with feed generator
+// - genearte category based urls
+
 let fs   = require('fs');
 let exec = require('child_process').exec;
 

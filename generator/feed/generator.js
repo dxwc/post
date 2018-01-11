@@ -12,6 +12,7 @@ let md_dir = '../../markdown';
 let all_entries = '';
 
 // TODO:
+// + add matching alternate links to entries for generated pages
 // + see if tags can be added easily or should be omitted
 
 open_db_global()

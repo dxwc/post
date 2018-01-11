@@ -62,10 +62,6 @@ open_db_global()
             }
         });
     }
-    else
-    {
-        return; // all good
-    }
 })
 .then(() =>
 {
@@ -98,7 +94,6 @@ open_db_global()
 
 
 
-
 // ---------------------------------------------------------
 // ---------------------------------------------------------
 
@@ -116,7 +111,8 @@ function md_path_to_category(md_path)
     let all = '';
     for(let i = 0; i < category_arr.length; ++i)
     {
-        all += `<category term='${category_arr[i]}' label='${category_arr[i]}' />`
+        all += `<category term='${category_arr[i]}' label='${category_arr[i]}' />
+    `
     }
     return all;
 }
@@ -252,7 +248,8 @@ function category_generator(categories)
         `label='${categories[i].label}'` :
         `label='${categories[i].term}'`}
     ${categories[i].schema ? `schema='${categories[i].schema}'` : ''}
-    />`
+    />
+`;
     }
     return all;
 }
@@ -419,6 +416,11 @@ function check_entry(md_file_loc, data)
     return db_get_promise(`SELECT * FROM entry where file_loc='${md_file_loc}'`)
     .then((result) =>
     {
+        let category = category_generator(data.yaml.categories);
+        category += md_path_to_category(validator.unescape(md_file_loc));
+        // console.log(category);
+        // TODO: add category label schema url from _feed.yaml
+
         if(result === undefined)
         {
             content_diff = true;
@@ -494,8 +496,8 @@ function check_entry(md_file_loc, data)
     ${person_construct_generator(data.yaml.authors, 'author')}
     ${link_generator(data.yaml.links)}
     ${category_generator(data.yaml.categories)}
-    ${person_construct_generator(data.yaml.contributors, 'contributor')}
     ${md_path_to_category(loc)}
+    ${person_construct_generator(data.yaml.contributors, 'contributor')}
     ${data.yaml.summary ?
 `<summary type='html'>
       ${validator.escape(data.yaml.summary)}

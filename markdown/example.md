@@ -1,8 +1,8 @@
 ---
 title: Example Page
-category:
-    - example
-    - page
+categories:
+    - term: example
+    - term: page
 tag:
     - yaml
     - markdown

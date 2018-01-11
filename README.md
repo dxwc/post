@@ -1,4 +1,9 @@
-**Status**: non-functional, in-progress
+**Status**: in-progress
+
++ Woring feed generation
++ Working site generation
++ Todo:
+    + Combine
 
 ------
 

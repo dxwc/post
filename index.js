@@ -12,7 +12,6 @@ let md_dir = './markdown';
 let all_entries = '';
 
 // TODO:
-// + add rights, source, summery
 // + see if tags can be added easily or should be omitted
 
 open_db_global()
@@ -303,14 +302,14 @@ let xml = `<?xml version='1.0' encoding='utf-8'?>
 <feed xmlns='http://www.w3.org/2005/Atom'>
 
   <id>${feed.id}</id>
-  <title>${feed.title}</title>
+  <title type='html'>${validator.escape(feed.title)}</title>
   <updated>${new Date(updated).toISOString()}</updated>
   ${feed.subtitle ? feed.subtitle : ''}
   ${person_construct_generator(feed.authors, 'author')}
   ${link_generator(feed.links)}
   ${feed.icon ? `<icon>${feed.icon}</icon>` : ''}
   ${feed.logo ? `<logo>${feed.logo}</logo>` : ''}
-  ${feed.rights ? `<rights>${feed.logo}</rights>` : ''}
+  ${feed.rights ? `<rights type='html'>${validator.escape(feed.rights)}</rights>` : ''}
   ${feed.generator.name ?
     `<generator
         ${feed.generator.uri ? `uri='${feed.generator.uri}'` : ''}
@@ -497,6 +496,12 @@ function check_entry(md_file_loc, data)
     ${category_generator(data.yaml.categories)}
     ${person_construct_generator(data.yaml.contributors, 'contributor')}
     ${md_path_to_category(loc)}
+    ${data.yaml.summary ?
+`<summary type='html'>
+      ${validator.escape(data.yaml.summary)}
+    </summary>` : ''}
+    ${data.yaml.rights ?
+`<rights type='html'>${validator.escape(data.yaml.rights)}</rights>` : ''}
   </entry>
 `;
     })

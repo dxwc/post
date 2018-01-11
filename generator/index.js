@@ -8,7 +8,7 @@ const validator = require('validator');
 
 let feed;
 let feed_id;
-let md_dir = './markdown';
+let md_dir = '../markdown';
 let all_entries = '';
 
 // TODO:

@@ -54,6 +54,7 @@ With few more controls over feed generation than usual
 
 # Feature TODO:
 
++ Replace content in database with hash
 + Category pages and atom schema
     + Tag/category differentiation with schema
 + Feed per category

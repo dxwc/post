@@ -1,5 +1,5 @@
 ---
-title: Example Page
+title: Example Page # required
 authors:
   - name: Robert
     email:
@@ -10,11 +10,12 @@ categories:
 links:
     - rel: via
       href: https://example.com
-summary: A example page to test functionalities >><<
+    - rel: related
+      href: https://example.com/about
+summary: A example page to test functionalities >><< # html allowed
 rights: CC0
+date: January, 2018 # used for html generation only, for human readability
 ---
-
-# Example Page
 
 Hello World!
 

@@ -150,6 +150,16 @@ $endif$
     {
         quotes: "“" "”" "‘" "’";
     }
+    .atom_rel
+    {
+        display: inline-block;
+        text-transform: capitalize;
+    }
+    .category
+    {
+        padding: 0.1em;
+        border: 0.1em solid #ddd;
+    }
   </style>
 $if(math)$
   $math$
@@ -172,6 +182,24 @@ $endif$
 </header>
 $endif$
 $body$
+<footer>
+$if(links)$
+    $for(links)$
+    $if(links.rel)$
+    $if(links.href)$
+    <span class='atom_rel'>$links.rel$</span> : <a href='$links.href$'>$links.href$</a><br>
+    $endif$
+    $endif$
+    $endfor$
+$endif$
+$if(categories)$
+    Filed under:
+    $for(categories)$
+        <span class='category'>$categories.term$</span>
+    $endfor$
+$endif$
+</footer>
+
 </article>
 <footer>
     <a href='/'>Home</a>&nbsp;

@@ -34,7 +34,7 @@ With few more controls over feed generation than usual
 
 ------------
 
-**Tested Working versions**:
+**Tested working versions**:
 
 + node : 8.9.4
 + npm: 5.6.0

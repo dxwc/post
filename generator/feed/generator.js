@@ -11,6 +11,7 @@ let feed_id;
 let md_dir = '../../markdown';
 let feed_dir = '../../public';
 let all_entries = '';
+let alternate = '';
 
 // TODO:
 // + add matching alternate links to entries for generated pages
@@ -291,11 +292,58 @@ function link_generator(links)
       ${links[i].rel ? `rel='${links[i].rel}'` : ''}
       ${links[i].type ? `type='${links[i].type}'` : ''}
       href='${links[i].href}'
-    />`;
+    />
+    `;
     }
 
     return all;
+}
 
+function get_feed_rel_alt(links)
+{
+    if(links === undefined) return all;
+    for(let i = 0; i < links.length; ++i)
+    {
+        if(!links[i].href || links[i].href.length === 0) continue;
+        if(links[i].rel === 'alternate') return links[i].href;
+    }
+
+    return '';
+}
+
+function link_generator_entry(links, path)
+{
+    let all = '';
+    if(links === undefined) return all;
+    for(let i = 0; i < links.length; ++i)
+    {
+        if
+        (
+            !links[i].href ||
+            links[i].href.length === 0 ||
+            links[i].rel === 'alternate'
+        )
+            continue;
+        all +=
+`<link
+      ${links[i].rel ? `rel='${links[i].rel}'` : ''}
+      ${links[i].type ? `type='${links[i].type}'` : ''}
+      href='${links[i].href}'
+    />
+    `;
+    }
+
+    let link_end = validator.unescape(path).substr(6);
+    link_end = link_end.substr(0, link_end.length-3) + '.html';
+    all +=
+`<link
+    rel='alternate'
+    type='html'
+    href='${get_feed_rel_alt(feed.links)}/${link_end}'
+  />
+  `;
+
+    return all;
 }
 
 function generate_feed(feed, entries, updated)
@@ -361,7 +409,7 @@ function traverse_md_files(markdown_root_dir)
         {
             traverse_md_files(markdown_root_dir + '/' + inside_dir[i]);
         }
-        else if(inside_dir[i].slice(-2) == 'md')
+        else if(inside_dir[i].slice(-2) == 'md' && inside_dir[i] !== 'links.md' )
         {
             // TODO: see if it is a good idea to make it async instead of chain
             let loc = markdown_root_dir + '/' + inside_dir[i];
@@ -500,7 +548,7 @@ function check_entry(md_file_loc, data)
     ${validator.escape(result[0])}
     </content>
     ${person_construct_generator(data.yaml.authors, 'author')}
-    ${link_generator(data.yaml.links)}
+    ${link_generator_entry(data.yaml.links, md_file_loc)}
     ${category_generator(data.yaml.categories)}
     ${md_path_to_category(loc)}
     ${person_construct_generator(data.yaml.contributors, 'contributor')}

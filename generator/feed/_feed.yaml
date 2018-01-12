@@ -14,9 +14,8 @@ links:
   - rel: self
     href: https://example.com/atom.xml
     type: "application/atom+xml"
-  - rel:
-    href:
-    type:
+  - rel: alternate
+    href: https://example.com
 icon_link :
 rights:
 logo:

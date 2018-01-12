@@ -16,7 +16,7 @@ With few more controls over feed generation than usual
 3. Have [pandoc](https://pandoc.org/) installed and accessible from terminal
 4. Have ES6 supporting [Node.js](https://nodejs.org/) and `npm` installed and
    accessible from terminal
-5. Know basics of [pandoc markdown synata](http://pandoc.org/MANUAL.html#pandocs-markdown) -- note the yaml synatax as well
+5. Know basics of [pandoc markdown syntax](http://pandoc.org/MANUAL.html#pandocs-markdown) -- note the yaml syntax as well
 
 -------------
 
@@ -55,5 +55,5 @@ With few more controls over feed generation than usual
 # Feature TODO:
 
 + Category pages and atom schema
-    + Tag/category differenciation with schema
+    + Tag/category differentiation with schema
 + Feed per category

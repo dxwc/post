@@ -76,6 +76,7 @@ class feed_generator
         for(let i = 0; i < persons.length; ++i)
         {
             if(
+                persons[i].name &&
                 typeof persons[i].name !== 'string' ||
                 persons[i].name.length === 0 ||
                 validator.escape(persons[i].name) !== persons[i].name
@@ -118,6 +119,44 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
     <updated>${new Date().toISOString()}</updated>
     ${this.generate_person_construct(this.feed_yaml.authors, 'author')}
     ${this.generate_person_construct(this.feed_yaml.contributors, 'contributor')}
+
+    ${
+        typeof this.feed_yaml.self_link === 'string' &&
+        validator.isURL(this.feed_yaml.self_link) ?
+`
+    <link type='application/atom+xml' rel='self' href='${this.feed_yaml.self_link}'/>`
+    : ''
+    }
+
+    ${
+        typeof this.feed_yaml.alternate_link === 'string' &&
+        validator.isURL(this.feed_yaml.alternate_link) ?
+`
+    <link type='alternate' rel='alternate' href='${this.feed_yaml.alternate_link}' />`
+    : ''
+    }
+
+    ${
+        typeof this.feed_yaml.icon === 'string' &&
+        validator.isURL(this.feed_yaml.icon) ?
+`
+    <icon>${this.feed_yaml.icon}</icon>` : ''
+    }
+
+    ${
+        typeof this.feed_yaml.logo === 'string' &&
+        validator.isURL(this.feed_yaml.logo) ?
+`
+    <logo>${this.feed_yaml.logo}</logo>` : ''
+    }
+
+    ${
+        typeof this.feed_yaml.rights === 'string' &&
+        this.feed_yaml.rights.length > 0 ?
+`
+    <rights type='html'>${validator.escape(this.feed_yaml.rights)}</rights>` : ''
+    }
+
 </feed>
 `.replace(/^\s*[\r\n]/gm, ''); // https://stackoverflow.com/a/16369725
     }

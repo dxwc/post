@@ -10,3 +10,4 @@ Changes
     - Since entries data will be hand generated, it is safer to have top level
       author
 - Making URI requirement of atom as URL
+- Allow only one self link and one alternate link on top level

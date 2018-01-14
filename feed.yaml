@@ -1,5 +1,10 @@
 title: A >>>website
 id: s37ceiurfwheyrftx237u
+self_link: https://example.com/feed.xml
+alternate_link: https://example.com
+icon: https://example.com/icon.jpg
+logo:
+rights: test
 authors:
   - name: Jonathan Williams
     email: jwilliams@example.com

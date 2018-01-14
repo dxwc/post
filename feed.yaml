@@ -4,3 +4,9 @@ authors:
   - name: Jonathan Williams
     email: jwilliams@example.com
     url:
+contributors:
+  - name: Ricki Havner
+    url: https://example.com/ricki
+  - name: Augustine> Vanasse
+  - name: Shannon Kumlander
+    email: sk@example.com

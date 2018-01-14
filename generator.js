@@ -72,6 +72,7 @@ class feed_generator
     generate_person_construct(persons, tag)
     {
         let all = '';
+        if(typeof persons !== 'object') return '';
         for(let i = 0; i < persons.length; ++i)
         {
             if(
@@ -80,12 +81,13 @@ class feed_generator
                 validator.escape(persons[i].name) !== persons[i].name
             )
             {
-                console.log(`Skipping an invalid ${tag}:name : ${persons[i].name}`)
+                console.log(`==> Skipping an invalid ${tag}:name : ${persons[i].name}`)
                 continue;
             }
 
             all +=
-`<${tag}>
+`
+    <${tag}>
       <name>${persons[i].name}</name>
       ${
           typeof persons[i].email === 'string' &&
@@ -115,6 +117,7 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
 ` type='html'` : `` }>${validator.escape(this.feed_yaml.title)}</title>
     <updated>${new Date().toISOString()}</updated>
     ${this.generate_person_construct(this.feed_yaml.authors, 'author')}
+    ${this.generate_person_construct(this.feed_yaml.contributors, 'contributor')}
 </feed>
 `.replace(/^\s*[\r\n]/gm, ''); // https://stackoverflow.com/a/16369725
     }

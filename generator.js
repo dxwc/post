@@ -2,6 +2,7 @@ const fs          = require('fs');
 const path        = require('path');
 const yaml_parser = require('js-yaml');
 const validator   = require('validator');
+const exec        = require('child_process').exec;
 
 class feed_generator
 {
@@ -106,6 +107,114 @@ class feed_generator
         return all;
     }
 
+    md_files(func_per_file)
+    {
+        if(typeof func_per_file !== 'function') throw new Error('no func');
+        let dirs = [this.markdown_dir];
+        let a_dir;
+        while(dirs.length)
+        {
+            a_dir = dirs.pop();
+            fs.readdirSync(a_dir, { encoding : 'utf8'})
+            .forEach((item) =>
+            {
+                item = path.join(a_dir, item);
+                if(fs.statSync(item).isDirectory())
+                {
+                    dirs.push(item);
+                }
+                else if(item.length > 3 && path.extname(item) === '.md')
+                {
+                    func_per_file(item);
+                }
+            });
+        }
+    }
+
+
+    run_command(command)
+    {
+        return new Promise((resolve, reject) =>
+        {
+            console.log('Executing:', command);
+            exec(command, (err, stdout, stderr) =>
+            {
+                if(err)
+                {
+                    reject(err);
+                }
+                else
+                {
+                    if(stdout) console.info('Stdout:', stdout);
+                    if(stderr) console.error('Stderr', stderr);
+                    resolve([stdout, stderr]);
+                }
+            });
+        });
+    }
+
+    generate_html()
+    {
+        let pandoc_commands = [];
+        this.md_files((file) =>
+        {
+            let public_dir = path.join
+                            (
+                                __dirname,
+                                'public',
+                                path.dirname(path.relative(this.markdown_dir, file))
+                            );
+
+            try { fs.mkdirSync(public_dir); } catch(err) { }
+            pandoc_commands.push
+            (
+                this.run_command
+                (
+`pandoc ${file} \
+-f markdown \
+-t html5 \
+-so ${path.join(public_dir, path.basename(file, '.md') + '.html')}`
+                )
+            );
+        });
+
+        return Promise.all(pandoc_commands);
+    }
+
+
+    entry_generator(entry)
+    {
+        if
+        (!
+            (entry &&
+            typeof entry.id === 'string' &&
+            entry.id.length > 0 &&
+            typeof entry.title === 'string' &&
+            entry.title.length > 0 &&
+            typeof entry.updated === 'string' &&
+            entry.updated.length > 0
+           )
+        )
+        {
+            console.log(`==> Entry doesn't have valid data.\nExiting`);
+            process.exit(1);
+        }
+
+        return `
+    <entry>
+        <id>${entry.id}</id>
+        <title${validator.escape(entry.title) !== entry.title ? ` type='html'` : ''}>
+            ${validator.escape(entry.title)}
+        </title>
+        <updated>${entry.updated}</updated>
+        ${typeof entry.authors === 'object' ?
+            this.generate_person_construct(entry.authors, 'author') : ''}
+        ${typeof entry.contributors === 'object' ?
+            this.generate_person_construct(entry.contributors, 'contributor') : ''}
+    </entry>
+`
+    }
+
     generate()
     {
         console.log('--Generating Atom feed XML');
@@ -165,3 +274,26 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
 let fg = new feed_generator();
 let atom = fg.generate();
 console.log(atom);
+console.log(fg.entry_generator(
+{
+    id: 'asdasd',
+    title: '<b>Coool</b>',
+    updated: new Date().toISOString(),
+    authors:
+    [
+        { name: 'Bob', email : 'bob@example.com' }
+    ]
+}));
+
+
+
+
+fg.generate_html()
+.then(() =>
+{
+    console.log('all converted');
+})
+.catch((err) =>
+{
+    console.log('err', err);
+})

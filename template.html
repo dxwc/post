@@ -186,10 +186,8 @@ $body$
 <footer>
 $if(links)$
     $for(links)$
-    $if(links.rel)$
     $if(links.href)$
-    <span class='atom_rel'>$links.rel$</span> : <a href='$links.href$'>$links.href$</a><br>
-    $endif$
+    <span class='atom_rel'>$if(links.rel)$ $links.rel$ $else$ related $endif$</span> : <a href='$links.href$'>$links.href$</a><br>
     $endif$
     $endfor$
 $endif$

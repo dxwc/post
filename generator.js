@@ -338,12 +338,38 @@ ${validator.escape(entry.title)}</title>
             this.generate_person_construct(entry.contributors, 'contributor') : ''}
         ${typeof entry.alternate === 'string' && entry.alternate.length ?
             `<link type='text/html' rel='alternate' href='${entry.alternate}' />` : ''}
+        ${this.link_generator_entry(entry.links)}
         ${typeof entry.content === 'string' && entry.content.length ?
         `<content type='html'>
             ${entry.content}
         </content>` : ''}
     </entry>
 `
+    }
+
+
+
+    link_generator_entry(links)
+    {
+        let all = '';
+        if(links === undefined || typeof links.length !== 'number') return all;
+        for(let i = 0; i < links.length; ++i)
+        {
+            if
+            (
+                !links[i].href ||
+                links[i].href.length === 0 ||
+                links[i].rel === 'alternate'
+            ) continue;
+
+            all +=
+`<link type='${links[i].type || 'text/html'}' rel='${links[i].rel || 'related'}' \
+href='${links[i].href}' />
+        `;
+
+        }
+
+        return all;
     }
 
     generate(entries)

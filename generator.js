@@ -362,6 +362,20 @@ ${validator.escape(entry.title)}</title>
                 links[i].rel === 'alternate'
             ) continue;
 
+            if(typeof links[i].rel === 'string')
+            {
+                if
+                (
+                    links[i].rel !== 'related' ||
+                    links[i].rel !== 'via' ||
+                    links[i].rel !== 'self' ||
+                    links[i].rel !== 'enclosure'
+                )
+                {
+                    links[i].rel = 'related';
+                }
+            }
+
             all +=
 `<link type='${links[i].type || 'text/html'}' rel='${links[i].rel || 'related'}' \
 href='${links[i].href}' />
@@ -390,7 +404,7 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
         typeof this.feed_yaml.self_link === 'string' &&
         validator.isURL(this.feed_yaml.self_link) ?
 `
-    <link type='application/atom+xml' rel='self' href='${this.feed_yaml.self_link}'/>`
+    <link type='application/atom+xml' rel='self' href='${this.feed_yaml.self_link}' />`
     : ''
     }
 

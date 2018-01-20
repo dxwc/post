@@ -365,11 +365,11 @@ ${validator.escape(entry.title)}</title>
             if(typeof links[i].rel === 'string')
             {
                 if
-                (
-                    links[i].rel !== 'related' ||
-                    links[i].rel !== 'via' ||
-                    links[i].rel !== 'self' ||
-                    links[i].rel !== 'enclosure'
+                (!
+                    (links[i].rel === 'related' ||
+                    links[i].rel === 'via' ||
+                    links[i].rel === 'self' ||
+                    links[i].rel === 'enclosure')
                 )
                 {
                     links[i].rel = 'related';

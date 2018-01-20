@@ -33,12 +33,16 @@ class feed_generator
         try
         {
             console.log(`--Creating directory [if not exists]: ${this.markdown_dir}`);
-            try{ fs.mkdirSync(this.markdown_dir) } catch(err) { }
-            console.info(`==> No markdown files in ${this.markdown_dir}\n--Exiting`);
+            fs.mkdirSync(this.markdown_dir);
+            console.log(`==> No markdown files in ${this.markdown_dir}\n--Exiting`);
+            process.exit(0);
         }
         catch(err)
         {
-            if(err.code !== 'EEXIST') throw err;
+            if(err.code !== 'EEXIST')
+            {
+                throw err;
+            }
         }
 
         try
@@ -242,7 +246,14 @@ class feed_generator
                 )
                 {
                     let destination = path.join(__dirname, 'public', path.relative(this.markdown_dir, item));
-                    try { fs.mkdirSync(path.dirname(destination)) } catch (err) { }
+                    try
+                    {
+                        let dir_cr = path.dirname(destination);
+                        console.log('--Creating dir [if not exists]', dir_cr);
+                        fs.mkdirSync(dir_cr);
+                    }
+                    catch (err) { }
+                    console.log('--Copying file from', item, 'to', destination);
                     fs.copyFileSync(item, destination);
                 }
             });
@@ -290,7 +301,12 @@ class feed_generator
                                 path.dirname(path.relative(this.markdown_dir, file))
                             );
 
-            try { fs.mkdirSync(public_dir); } catch(err) { }
+            try
+            {
+                console.log('--Creating dir [if not exists]', public_dir);
+                fs.mkdirSync(public_dir);
+            }
+            catch(err) { }
             pandoc_commands.push
             (
                 this.run_command
@@ -464,7 +480,7 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
         this.generate_html()
         .then(() =>
         {
-            console.log('--Finished generating html files into public dir');
+            console.log('>>>Finished generating html files into public dir');
             return this.open_db();
         })
         .then(() =>
@@ -628,10 +644,10 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
                 { encoding : 'utf-8' }
             );
 
-            console.log('--Written feed.xml in public dir');
+            console.log('>>>Written feed.xml in public dir');
             console.log('--Copying other files from markdown dir to public');
             this.copy_non_md_files();
-            console.log('--All complete');
+            console.log('>>>All complete');
         })
         .catch((err) =>
         {

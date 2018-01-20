@@ -33,7 +33,7 @@ class feed_generator
         try
         {
             console.log(`--Creating directory [if not exists]: ${this.markdown_dir}`);
-            fs.mkdirSync(this.markdown_dir);
+            try{ fs.mkdirSync(this.markdown_dir) } catch(err) { }
             console.info(`==> No markdown files in ${this.markdown_dir}\n--Exiting`);
         }
         catch(err)
@@ -219,6 +219,36 @@ class feed_generator
         }
     }
 
+    copy_non_md_files()
+    {
+        let dirs = [this.markdown_dir];
+        let a_dir;
+        while(dirs.length)
+        {
+            a_dir = dirs.pop();
+            fs.readdirSync(a_dir, { encoding : 'utf8'})
+            .forEach((item) =>
+            {
+                item = path.join(a_dir, item);
+                if(fs.statSync(item).isDirectory())
+                {
+                    dirs.push(item);
+                }
+                else if
+                (
+                    item.length > 3 &&
+                    path.extname(item) !== '.md' &&
+                    path.basename(item)[0] !== '.'
+                )
+                {
+                    let destination = path.join(__dirname, 'public', path.relative(this.markdown_dir, item));
+                    try { fs.mkdirSync(path.dirname(destination)) } catch (err) { }
+                    fs.copyFileSync(item, destination);
+                }
+            });
+        }
+    }
+
 
     run_command(command)
     {
@@ -240,8 +270,16 @@ class feed_generator
         });
     }
 
+
     generate_html()
     {
+        let execSync = require("child_process").execSync;
+
+        console.log('--Deleting existing public dir if exists');
+
+        try { execSync(`rm -rf ${path.join(__dirname, 'public')}`) }
+        catch(err) { console.log(err) }
+
         let pandoc_commands = [];
         this.md_files((file) =>
         {
@@ -546,7 +584,10 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
                 { encoding : 'utf-8' }
             );
 
-            console.log('--feed.xml written in public dir');
+            console.log('--Written feed.xml in public dir');
+            console.log('--Copying other files from markdown dir to public');
+            this.copy_non_md_files();
+            console.log('--All complete');
         })
         .catch((err) =>
         {

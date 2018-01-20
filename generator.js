@@ -299,6 +299,10 @@ ${validator.escape(entry.title)}</title>
             this.generate_person_construct(entry.contributors, 'contributor') : ''}
         ${typeof entry.alternate === 'string' && entry.alternate.length ?
             `<link type='text/html' rel='alternate' href='${entry.alternate}' />` : ''}
+        ${typeof entry.content === 'string' && entry.content.length ?
+        `<content type='html'>
+            ${entry.content}
+        </content>` : ''}
     </entry>
 `
     }
@@ -359,187 +363,196 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
 </feed>
 `.replace(/^\s*[\r\n]/gm, ''); // https://stackoverflow.com/a/16369725
     }
+
+
+    all()
+    {
+        if
+        (!
+            (
+                typeof this.feed_yaml.alternate_link === 'string' &&
+                this.feed_yaml.alternate_link.length > 0 &&
+                validator.isURL(this.feed_yaml.alternate_link)
+            )
+        )
+        {
+            return Promise.reject(`Couldn't find alternate_link in feed.yaml`);
+        }
+
+        let site_link = this.feed_yaml.alternate_link;
+        this.generate_html()
+        .then(() =>
+        {
+            console.log('--Finished generating html files into public dir');
+            return this.open_db();
+        })
+        .then(() =>
+        {
+            let md_to_db_promise = [];
+            this.md_files((file) =>
+            {
+                let content = fs.readFileSync(file, { encoding : 'utf-8'});
+                let m1 = content.search('---');
+                let m2 = content.indexOf('---', m1+4);
+                if(m1 === -1 || m2 === -1) return;
+                // throw new Error('Expected yaml seperators not found in ' + file);
+
+                let yaml = yaml_parser.safeLoad(content.substr(m1+4, m2-5-m1));
+                let md = content.substr(m2+5);
+
+                let a_promise =
+                this.sql_get_promise
+                (
+                    `
+                    SELECT
+                        id,
+                        md_hash,
+                        updated,
+                        published,
+                        file_loc
+                    FROM entry
+                    WHERE file_loc='${path.relative(this.markdown_dir, file)}'
+                    `
+                )
+                .then((row) =>
+                {
+                    if(row && row.md_hash && row.id)
+                    {
+                        return row;
+                    }
+                    else
+                    {
+                        let id = uuidv4();
+                        let md_hash = md5(md);
+                        let published = new Date().getTime();
+                        let updated = new Date().getTime();
+                        let file_loc = path.relative(this.markdown_dir, file);
+
+                        return this.sql_promise
+                        (
+                            `
+                            INSERT INTO entry
+                            (
+                                id,
+                                published,
+                                updated,
+                                file_loc,
+                                md_hash
+                            )
+                            VALUES
+                            (
+                                '${id}',
+                                '${published}',
+                                '${updated}',
+                                '${file_loc}',
+                                '${md_hash}'
+                            )
+                            `
+                        )
+                        .then(() =>
+                        {
+                            return {
+                                id : id,
+                                md_hash : md_hash,
+                                published : published,
+                                updated : updated,
+                                file_loc : file_loc
+                            };
+                        });
+                    }
+                })
+                .then((row) =>
+                {
+                    if(md5(md) !== row.md_hash)
+                    {
+                        row.md_hash = md5(md);
+                        row.updated = new Date().getTime();
+                        console.log
+                        ('--Updating hash and update time as content changed');
+                        return this.sql_promise
+                        (
+                            `
+                            UPDATE entry
+                            SET
+                                updated='${row.updated}',
+                                md_hash='${row.md_hash}'
+                            WHERE
+                                id='${row.id}'
+                            `
+                        )
+                        .then(() =>
+                        {
+                            return row;
+                        });
+                    }
+                    else
+                    {
+                        return row;
+                    }
+                })
+                .then((row) =>
+                {
+                    yaml.id = row.id;
+                    yaml.published = new Date(row.published).toISOString();
+                    yaml.updated = new Date(row.updated).toISOString();
+                    yaml.alternate =
+                                    new URL(
+                                        path.join(
+                                            path.dirname(row.file_loc),
+                                            path.basename(row.file_loc, '.md') + '.html'
+                                        ),
+                                        site_link
+                                    ).href;
+                    return;
+                })
+                .then(() =>
+                {
+                    return this.run_command(`pandoc ${file} -f markdown -t html5`)
+                    .then((result) =>
+                    {
+                        if(result && typeof result[0] === 'string')
+                            yaml.content = validator.escape(result[0]);
+                        else
+                            throw new Error('pandoc error on entry', file);
+
+                        return;
+                    });
+                })
+                .then(() =>
+                {
+                    return this.entry_generator(yaml);
+                })
+
+                md_to_db_promise.push(a_promise);
+            });
+
+            return Promise.all(md_to_db_promise);
+        })
+        .then((result) =>
+        {
+            if(result === undefined) console.log('No entry?');
+
+            let all_entries = '';
+            for(let i = 0; i < result.length; ++i)
+            {
+                all_entries += result[i];
+            }
+
+            fs.writeFileSync
+            (
+                path.join(__dirname, 'public', 'feed.xml'),
+                this.generate(all_entries),
+                { encoding : 'utf-8' }
+            );
+
+            console.log('--feed.xml written in public dir');
+        })
+        .catch((err) =>
+        {
+            console.log('err', err);
+        });
+    }
 }
 
 let fg = new feed_generator();
-let atom = fg.generate();
-console.log(atom);
-console.log(fg.entry_generator(
-{
-    id: 'asdasd',
-    title: '<b>Coool</b>',
-    updated: new Date().toISOString(),
-    authors:
-    [
-        { name: 'Bob', email : 'bob@example.com' }
-    ]
-}));
-
-
-
-fg.open_db()
-.then(() =>
-{
-    let md_to_db_promise = [];
-    fg.md_files((file) =>
-    {
-        let content = fs.readFileSync(file, { encoding : 'utf-8'});
-        let m1 = content.search('---');
-        let m2 = content.indexOf('---', m1+4);
-        if(m1 === -1 || m2 === -1) return;
-            // throw new Error('Expected yaml seperators not found in ' + file);
-
-        let yaml = yaml_parser.safeLoad(content.substr(m1+4, m2-5-m1));
-        let md = content.substr(m2+5);
-
-        let a_promise =
-        fg.sql_get_promise
-        (
-            `
-            SELECT
-                id,
-                md_hash,
-                updated,
-                published,
-                file_loc
-            FROM entry
-            WHERE file_loc='${path.relative(fg.markdown_dir, file)}'
-            `
-        )
-        .then((row) =>
-        {
-            if(row && row.md_hash && row.id)
-            {
-                return row;
-            }
-            else
-            {
-               let id = uuidv4();
-               let md_hash = md5(md);
-               let published = new Date().getTime();
-               let updated = new Date().getTime();
-               let file_loc = path.relative(fg.markdown_dir, file);
-
-               return fg.sql_promise
-               (
-                   `
-                   INSERT INTO entry
-                   (
-                       id,
-                       published,
-                       updated,
-                       file_loc,
-                       md_hash
-                   )
-                   VALUES
-                   (
-                       '${id}',
-                       '${published}',
-                       '${updated}',
-                       '${file_loc}',
-                       '${md_hash}'
-                   )
-                   `
-               )
-               .then(() =>
-                {
-                    return {
-                        id : id,
-                        md_hash : md_hash,
-                        published : published,
-                        updated : updated,
-                        file_loc : file_loc
-                    };
-                });
-            }
-        })
-        .then((row) =>
-        {
-            if(md5(md) !== row.md_hash)
-            {
-                console.log('diff', md5(md), row.md_hash);
-                row.md_hash = md5(md);
-                row.updated = new Date().getTime();
-                console.log('--Updating hash and update time as content changed');
-                return fg.sql_promise
-                (
-                    `
-                    UPDATE entry
-                    SET
-                        updated='${row.updated}',
-                        md_hash='${row.md_hash}'
-                    WHERE
-                        id='${row.id}'
-                    `
-                )
-                .then(() =>
-                {
-                    return row;
-                });
-            }
-            else
-            {
-                return row;
-            }
-        })
-        .then((row) =>
-        {
-            yaml.id = row.id;
-            yaml.published = new Date(row.published).toISOString();
-            yaml.updated = new Date(row.updated).toISOString();
-            yaml.alternate =
-                            new URL(
-                                path.join(
-                                    path.dirname(row.file_loc),
-                                    path.basename(row.file_loc, '.md') + '.html'
-                                ),
-                                'https://example.com'
-                            ).href;
-            return;
-        })
-        .then(() =>
-        {
-            return fg.run_command(`pandoc ${file} -f markdown -t html5`)
-            .then((result) =>
-            {
-                if(result && typeof result[0] === 'string')
-                    yaml.content = validator.escape(result[0]);
-                else
-                    throw new Error('pandoc error on entry', file);
-
-                return;
-            });
-        })
-        .then(() =>
-        {
-            return fg.entry_generator(yaml);
-        })
-
-        md_to_db_promise.push(a_promise);
-    });
-
-    return Promise.all(md_to_db_promise);
-})
-.then((result) =>
-{
-    if(result === undefined) console.log('No entry?');
-
-    let all_entries = '';
-    for(let i = 0; i < result.length; ++i)
-    {
-        all_entries += result[i];
-    }
-
-    fs.writeFileSync
-    (
-        path.join(__dirname, 'public', 'feed.xml'),
-        fg.generate(all_entries),
-        { encoding : 'utf-8' }
-    );
-
-    fg.generate_html();
-})
-.catch((err) =>
-{
-    console.log('err', err);
-});
+fg.all();

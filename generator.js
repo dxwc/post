@@ -73,7 +73,7 @@ class feed_generator
             process.exit(1);
         }
 
-
+        this.latest_entry_updated = 0;
     }
 
     open_db()
@@ -396,7 +396,9 @@ href='${links[i].href}' />
     <title\
 ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
 ` type='html'` : `` }>${validator.escape(this.feed_yaml.title)}</title>
-    <updated>${new Date().toISOString()}</updated>
+    <updated>${this.latest_entry_updated > 0 ?
+        new Date(this.latest_entry_updated).toISOString() :
+        new Date().toISOString()}</updated>
     ${this.generate_person_construct(this.feed_yaml.authors, 'author')}
     ${this.generate_person_construct(this.feed_yaml.contributors, 'contributor')}
 
@@ -571,6 +573,8 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
                 })
                 .then((row) =>
                 {
+                    if(row.updated > this.latest_entry_updated)
+                        this.latest_entry_updated = row.updated;
                     yaml.id = row.id;
                     yaml.published = new Date(row.published).toISOString();
                     yaml.updated = new Date(row.updated).toISOString();

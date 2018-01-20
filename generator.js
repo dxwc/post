@@ -260,6 +260,7 @@ class feed_generator
 `pandoc ${file} \
 -f markdown \
 -t html5 \
+--template=${path.join(__dirname, 'template.html')} \
 -so ${path.join(public_dir, path.basename(file, '.md') + '.html')}`
                 )
             );

@@ -1,0 +1,5 @@
+---
+title: example
+---
+
+Example **page**

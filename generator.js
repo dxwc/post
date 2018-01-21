@@ -272,7 +272,7 @@ class feed_generator
         let content =
 `---
 title: All internal links
-feed_ignore: true
+ignore: true
 date: ${new Date().toLocaleDateString()}
 ---
 
@@ -382,7 +382,7 @@ date: ${new Date().toLocaleDateString()}
             process.exit(1);
         }
 
-        if(entry.feed_ignore === true) return '';
+        if(entry.ignore === true) return '';
 
         return `
     <entry>

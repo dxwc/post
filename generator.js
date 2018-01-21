@@ -342,6 +342,8 @@ class feed_generator
             process.exit(1);
         }
 
+        if(entry.feed_ignore === true) return '';
+
         return `
     <entry>
         <id>${entry.id}</id>

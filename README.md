@@ -1,6 +1,5 @@
 # TODO
 
-- add ignorelist (or yaml marker) to exclude from feed (eg: sitemap, contact, categories)
 - replace deleting public dir with temporary dir and mv to replace dir once complete
 - replace exec with execSync where possible
 - reduce multiple loops of file traversal to one/two

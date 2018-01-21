@@ -390,9 +390,13 @@ ${validator.escape(entry.title)}</title>
 ${categories[i].label && validator.escape(categories[i].label) === categories[i].label ?
     `label='${categories[i].label}'` :
     `label='${categories[i].term}'`} \
-${categories[i].schema ?
-    `schema='${categories[i].schema}'` : ''} \
-/>
+schema='${
+            new URL
+            (
+                path.join('category', categories[i].term + '.html'),
+                this.feed_yaml.alternate_link
+            ).href
+        }' />
         `;
         }
         return all;
@@ -640,8 +644,10 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
                     yaml.categories = yaml.categories || [];
 
                     let categories = path.dirname(row.file_loc).split(path.sep);
+                    /*
                     let schema;
                     let cat_split;
+                    */
 
                     for(let i = 0; i < categories.length; ++i)
                     {
@@ -651,6 +657,7 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
                             validator.escape(categories[i]) !== categories[i]
                         ) continue;
 
+                        /*
                         schema = [];
                         cat_split = row.file_loc.split(path.sep);
                         for(let k = 0; k < cat_split.length; ++k)
@@ -659,13 +666,14 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
                             if(cat_split[k] === categories[i]) break;
                         }
                         schema = path.join(this.feed_yaml.alternate_link, ...schema);
+                        */
 
                         yaml.categories.push
                         (
                             {
                                 term : categories[i],
-                                label: categories[i],
-                                schema: schema
+                                label: categories[i] //,
+                                // schema: schema
                             }
                         )
                     }

@@ -272,7 +272,7 @@ class feed_generator
         let content =
 `---
 title: All internal links
-ignore: true
+feed_ignore: true
 date: ${new Date().toLocaleDateString()}
 ---
 

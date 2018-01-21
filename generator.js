@@ -266,12 +266,45 @@ class feed_generator
         }
     }
 
+    generate_site_map()
+    {
+        console.log('--Generating site map with all links [.md] file')
+        let content =
+`---
+title: All internal links
+ignore: true
+date: ${new Date().toLocaleDateString()}
+---
+
+`;
+        this.md_files((file) =>
+        {
+
+            let view = path.join
+            (
+                path.relative(this.markdown_dir, path.dirname(file)),
+                path.basename(file, '.md') + '.html'
+            );
+
+            let href = new URL(view, this.feed_yaml.alternate_link).href;
+
+            content += `+ [${view}](${href})\n`;
+        });
+
+        fs.writeFileSync
+        (
+            path.join(this.markdown_dir, 'links.md'),
+            content,
+            { encoding : 'utf-8' }
+        );
+    }
+
 
     run_command(command)
     {
         return new Promise((resolve, reject) =>
         {
-            console.log('Executing:', command);
+            console.log('--Executing:', command);
             exec(command, (err, stdout, stderr) =>
             {
                 if(err)
@@ -503,8 +536,7 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
 
     ${entries ? entries : ''}
 
-</feed>
-`.replace(/^\s*[\r\n]/gm, ''); // https://stackoverflow.com/a/16369725
+</feed>`.replace(/^\s*[\r\n]/gm, ''); // https://stackoverflow.com/a/16369725
     }
 
 
@@ -523,7 +555,13 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
         }
 
         let site_link = this.feed_yaml.alternate_link;
-        this.generate_html()
+        Promise.resolve()
+        .then(() =>
+        {
+            this.generate_site_map();
+
+            return this.generate_html();
+        })
         .then(() =>
         {
             console.log('>>>Finished generating html files into public dir');

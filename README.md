@@ -1,9 +1,9 @@
 # TODO
 
+- generate category pages
 - replace deleting public dir with temporary dir and mv to replace dir once complete
 - replace exec with execSync where possible
 - reduce multiple loops of file traversal to one/two
-- generate site map with link
 
 # Changes
 

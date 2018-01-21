@@ -280,10 +280,11 @@ date: ${new Date().toLocaleDateString()}
         this.md_files((file) =>
         {
 
+            let base_name = path.basename(file, '.md') + '.html';
             let view = path.join
             (
                 path.relative(this.markdown_dir, path.dirname(file)),
-                path.basename(file, '.md') + '.html'
+                base_name === 'index.html' ? '/' : base_name
             );
 
             let href = new URL(view, this.feed_yaml.alternate_link).href;

@@ -359,10 +359,42 @@ ${validator.escape(entry.title)}</title>
         `<content type='html'>
             ${entry.content}
         </content>` : ''}
+        ${this.category_generator(entry.categories)}
     </entry>
 `
     }
 
+    category_generator(categories)
+    {
+        if
+        (
+            typeof categories !== 'object' ||
+            typeof categories.length !== 'number'
+        ) return '';
+
+
+        let all = '';
+        for(let i = 0; i < categories.length; ++i)
+        {
+            if
+            (
+                typeof categories[i].term !== 'string' ||
+                categories[i].term.length === 0 ||
+                validator.escape(categories[i].term) !== categories[i].term
+            ) continue;
+
+            all +=
+`<category term='${categories[i].term}' \
+${categories[i].label && validator.escape(categories[i].label) === categories[i].label ?
+    `label='${categories[i].label}'` :
+    `label='${categories[i].term}'`} \
+${categories[i].schema ?
+    `schema='${categories[i].schema}'` : ''} \
+/>
+        `;
+        }
+        return all;
+    }
 
 
     link_generator_entry(links)
@@ -602,6 +634,42 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
                                         ),
                                         site_link
                                     ).href;
+
+                    yaml.categories = yaml.categories || [];
+
+                    let categories = path.dirname(row.file_loc).split(path.sep);
+                    let schema;
+                    let cat_split;
+
+                    for(let i = 0; i < categories.length; ++i)
+                    {
+                        if
+                        (
+                            !(categories[i].length > 1) ||
+                            validator.escape(categories[i]) !== categories[i]
+                        ) continue;
+
+                        schema = [];
+                        cat_split = row.file_loc.split(path.sep);
+                        for(let k = 0; k < cat_split.length; ++k)
+                        {
+                            schema.push(cat_split[k]);
+                            if(cat_split[k] === categories[i]) break;
+                        }
+                        schema = path.join(this.feed_yaml.alternate_link, ...schema);
+
+                        yaml.categories.push
+                        (
+                            {
+                                term : categories[i],
+                                label: categories[i],
+                                schema: schema
+                            }
+                        )
+                    }
+
+                    if(yaml.categories.length === 0) delete yaml.categories;
+
                     return;
                 })
                 .then(() =>

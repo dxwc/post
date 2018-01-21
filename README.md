@@ -4,8 +4,6 @@
 - replace exec with execSync where possible
 - reduce multiple loops of file traversal to one/two
 - generate site map with link
-- add categories
-- add other link rel support
 
 # Changes
 

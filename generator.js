@@ -245,7 +245,13 @@ class feed_generator
                     path.basename(item)[0] !== '.'
                 )
                 {
-                    let destination = path.join(__dirname, 'public', path.relative(this.markdown_dir, item));
+                    let destination =
+                        path.join
+                        (
+                            __dirname,
+                            'public',
+                            path.relative(this.markdown_dir, item)
+                        );
                     try
                     {
                         let dir_cr = path.dirname(destination);
@@ -387,9 +393,11 @@ ${validator.escape(entry.title)}</title>
 
             all +=
 `<category term='${categories[i].term}' \
-${categories[i].label && validator.escape(categories[i].label) === categories[i].label ?
-    `label='${categories[i].label}'` :
-    `label='${categories[i].term}'`} \
+${
+    categories[i].label &&
+    validator.escape(categories[i].label) === categories[i].label ?
+        `label='${categories[i].label}'` :
+        `label='${categories[i].term}'`} \
 schema='${
             new URL
             (
@@ -636,7 +644,8 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
                                     new URL(
                                         path.join(
                                             path.dirname(row.file_loc),
-                                            path.basename(row.file_loc, '.md') + '.html'
+                                            path.basename(row.file_loc, '.md')
+                                            + '.html'
                                         ),
                                         site_link
                                     ).href;

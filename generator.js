@@ -289,7 +289,7 @@ date: ${new Date().toLocaleDateString()}
 
             let href = new URL(view, this.feed_yaml.alternate_link).href;
 
-            content += `+ [${view}](${href})\n`;
+            content += `+ [${view.length === 1 ? view : `/${view}` }](${href})\n`;
         });
 
         fs.writeFileSync

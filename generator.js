@@ -390,6 +390,8 @@ date: ${new Date().toLocaleDateString()}
         <title${validator.escape(entry.title) !== entry.title ? ` type='html'` : ''}>\
 ${validator.escape(entry.title)}</title>
         <updated>${entry.updated}</updated>
+        ${entry.published ?
+            `<published>${entry.published}</published>` : ''}
         ${typeof entry.authors === 'object' ?
             this.generate_person_construct(entry.authors, 'author') : ''}
         ${typeof entry.contributors === 'object' ?

@@ -328,23 +328,23 @@ date: ${new Date().toLocaleDateString()}
 
         console.log('--Deleting existing public dir if exists');
 
-        try { execSync(`rm -rf ${path.join(__dirname, 'public')}`) }
+        try { execSync(`rm -rf ${path.join(__dirname, '.public')}`) }
         catch(err) { console.log(err) }
 
         let pandoc_commands = [];
         this.md_files((file) =>
         {
-            let public_dir = path.join
+            let pub_temp = path.join
                             (
                                 __dirname,
-                                'public',
+                                '.public',
                                 path.dirname(path.relative(this.markdown_dir, file))
                             );
 
             try
             {
-                console.log('--Creating dir [if not exists]', public_dir);
-                fs.mkdirSync(public_dir);
+                console.log('--Creating dir [if not exists]', pub_temp);
+                fs.mkdirSync(pub_temp);
             }
             catch(err) { }
             pandoc_commands.push
@@ -355,12 +355,26 @@ date: ${new Date().toLocaleDateString()}
 -f markdown \
 -t html5 \
 --template=${path.join(__dirname, 'template.html')} \
--so ${path.join(public_dir, path.basename(file, '.md') + '.html')}`
+-so ${path.join(pub_temp, path.basename(file, '.md') + '.html')}`
                 )
             );
         });
 
-        return Promise.all(pandoc_commands);
+        return Promise.all(pandoc_commands)
+        .then((result) =>
+        {
+            console.log(`--Replacing ${path.join(__dirname, 'public')} with ${path.join(__dirname, '.public')}`);
+            try { execSync(`rm -rf ${path.join(__dirname, 'public')}`) }
+            catch(err) { console.log(err) }
+            try { execSync(`mv -f ${path.join(__dirname, '.public')} ${path.join(__dirname, 'public')}`) }
+            catch(err) { console.log(err) }
+
+            console.log(`--Deleting ${path.join(__dirname, '.public')}`);
+            try { execSync(`rm -rf ${path.join(__dirname, '.public')}`) }
+            catch(err) { console.log(err) }
+
+            return result;
+        });
     }
 
 

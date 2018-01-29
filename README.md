@@ -6,6 +6,7 @@
 
 # Changes
 
+- make top level self link and alternate link required
 - Requiring top level author to exists even though atom does not necessarily require
   top level author if all entries have authors
     - Since entries data will be hand generated, it is safer to have top level

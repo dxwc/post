@@ -69,11 +69,18 @@ class feed_generator
             this.feed_yaml.authors[0].name.length !== 0 &&
             validator.escape(this.feed_yaml.authors[0].name)
                 ===
-            this.feed_yaml.authors[0].name)
+            this.feed_yaml.authors[0].name &&
+            typeof this.feed_yaml.self_link === 'string' &&
+            this.feed_yaml.self_link.length !== 0 &&
+            validator.isURL(this.feed_yaml.self_link) &&
+            typeof this.feed_yaml.alternate_link === 'string' &&
+            this.feed_yaml.alternate_link.length !== 0 &&
+            validator.isURL(this.feed_yaml.alternate_link))
         )
         {
-            console.log(`==> Minimum and valid required data (title, id and authors) `+
-                        `not found in\n\t${this.feed_yaml_path}\n--Exiting`);
+            console.log(
+`==> Minimum and valid required data (title, id and authors, self_link, \
+alternate_link) not found in\n\t${this.feed_yaml_path}\n--Exiting`);
             process.exit(1);
         }
 
@@ -305,7 +312,7 @@ date: ${new Date().toLocaleDateString()}
     {
         return new Promise((resolve, reject) =>
         {
-            console.log('--Executing:', command);
+            console.log(`--Executing: '${command}'`);
             exec(command, (err, stdout, stderr) =>
             {
                 if(err)
@@ -363,10 +370,19 @@ date: ${new Date().toLocaleDateString()}
         return Promise.all(pandoc_commands)
         .then((result) =>
         {
-            console.log(`--Replacing ${path.join(__dirname, 'public')} with ${path.join(__dirname, '.public')}`);
+            console.log
+            (
+`--Replacing ${path.join(__dirname, 'public')} with ${path.join(__dirname, '.public')}`
+            );
             try { execSync(`rm -rf ${path.join(__dirname, 'public')}`) }
             catch(err) { console.log(err) }
-            try { execSync(`mv -f ${path.join(__dirname, '.public')} ${path.join(__dirname, 'public')}`) }
+            try
+            {
+                execSync
+                (
+`mv -f ${path.join(__dirname, '.public')} ${path.join(__dirname, 'public')}`
+                )
+            }
             catch(err) { console.log(err) }
 
             console.log(`--Deleting ${path.join(__dirname, '.public')}`);
@@ -581,7 +597,7 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
         })
         .then(() =>
         {
-            console.log('>>>Finished generating html files into public dir');
+            console.log('>>>Finished generating primary html files into public dir');
             return this.open_db();
         })
         .then(() =>
@@ -592,8 +608,14 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
                 let content = fs.readFileSync(file, { encoding : 'utf-8'});
                 let m1 = content.search('---');
                 let m2 = content.indexOf('---', m1+4);
-                if(m1 === -1 || m2 === -1) return;
-                // throw new Error('Expected yaml seperators not found in ' + file);
+                if(m1 === -1 || m2 === -1)
+                {
+                    console.log
+                    (
+                        `==> Expected yaml seperators: not found in ${file}, SKIPPING`
+                    );
+                    return;
+                }
 
                 let yaml = yaml_parser.safeLoad(content.substr(m1+4, m2-5-m1));
                 let md = content.substr(m2+5);
@@ -708,10 +730,6 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
                     yaml.categories = yaml.categories || [];
 
                     let categories = path.dirname(row.file_loc).split(path.sep);
-                    /*
-                    let schema;
-                    let cat_split;
-                    */
 
                     for(let i = 0; i < categories.length; ++i)
                     {
@@ -721,23 +739,11 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
                             validator.escape(categories[i]) !== categories[i]
                         ) continue;
 
-                        /*
-                        schema = [];
-                        cat_split = row.file_loc.split(path.sep);
-                        for(let k = 0; k < cat_split.length; ++k)
-                        {
-                            schema.push(cat_split[k]);
-                            if(cat_split[k] === categories[i]) break;
-                        }
-                        schema = path.join(this.feed_yaml.alternate_link, ...schema);
-                        */
-
                         yaml.categories.push
                         (
                             {
                                 term : categories[i],
-                                label: categories[i] //,
-                                // schema: schema
+                                label: categories[i]
                             }
                         )
                     }

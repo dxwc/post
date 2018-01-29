@@ -1,7 +1,7 @@
 {
   "name": "post",
   "version": "0.0.1",
-  "description": "- Major issues when used for 'real world' use cases:     - Will do full re-write and call previous version a prototype [also kept as branch]     - Target user is still myself",
+  "description": "markdown file in dirs + yaml ==> html site + feeds",
   "main": "generator.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

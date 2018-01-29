@@ -795,6 +795,11 @@ ${validator.escape(this.feed_yaml.title) !== this.feed_yaml.title ?
             console.log('>>>Written feed.xml in public dir');
             console.log('--Copying other files from markdown dir to public');
             this.copy_non_md_files();
+            console.log('--Extracting and writing feed for each category');
+            return require('./category_feeds')();
+        })
+        .then(() =>
+        {
             console.log('>>>All complete');
         })
         .catch((err) =>

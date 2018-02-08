@@ -1,5 +1,6 @@
 # TODO
 
+- make command line calls portable ( see [shelljs](https://www.npmjs.com/package/shelljs))
 - generate category pages
 - replace exec with execSync where possible
 - reduce multiple loops of file traversal to one/two
